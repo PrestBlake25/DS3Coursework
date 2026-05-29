@@ -209,3 +209,5 @@ cut -d, -f5 201402-citibike-tripdata.csv | grep "[0-9].*&.*[0-9]" | wc -l
 # 90,549 trips
 
 # compute the average trip duration
+$ awk 'NR > 1 {sum += $1; n++} END {print "Average is:",sum/n}' 201402-citibike-tripdata.csv
+# Average Trip Distance is 874.52
