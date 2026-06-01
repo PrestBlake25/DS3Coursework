@@ -18,7 +18,8 @@ load('trips.RData')
 ########################################
 
 # plot the distribution of trip times across all rides (compare a histogram vs. a density plot)
-
+ggplot(trips, aes(x = starttime)) + geom_histogram(binwidth = 200)
+ggplot(trips, aes(x = starttime)) + geom_density()
 # plot the distribution of trip times by rider type indicated using color and fill (compare a histogram vs. a density plot)
 
 # plot the total number of trips on each day in the dataset
