@@ -18,6 +18,7 @@ load('trips.RData')
 ########################################
 
 # plot the distribution of trip times across all rides (compare a histogram vs. a density plot)
+trips %>% filter(tripduration <= 60 * 60) %>% ggplot(aes(x=tripduration)) + histogram(bins = 200)
 ggplot(trips, aes(x = tripduration)) + scale_x_log10(label = comma) + geom_histogram(bins = 200)
 ggplot(trips, aes(x = tripduration)) + scale_x_log10(label = comma) + geom_density()
 # plot the distribution of trip times by rider type indicated using color and fill (compare a histogram vs. a density plot)
