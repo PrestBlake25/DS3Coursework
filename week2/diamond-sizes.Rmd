@@ -27,12 +27,40 @@ smaller %>%
 27.3.1 Exercise 3
 ---
 ---
-TODO
+### Something I find striking is that the carat of 2000 diamonds is about 0.3 carats,
+### and a little over 2000 diamonds have the carat of 1. 
 ---
 
 ---
 27.4.7 Exercise 1
 ---
 ---
-TODO
+```{r}
+
+  knitr::opts_chunk$set(
+    echo = TRUE
+  )
+  # Weight of a diamond varied by the cut
+  diamonds %>% 
+  ggplot(aes(x = carat)) + geom_histogram(bins = 30) + 
+  facet_wrap(~cut) + labs(title = "Distribution of Diamonds' Carat By Cut" , x = "Carat" , y = "Number of Diamonds")
+  
+  # Weight of a diamond varied by clarity
+  diamonds %>% ggplot(aes(x = carat)) + 
+  geom_histogram(bins = 30) + facet_wrap(~clarity) + labs(title = "Distribution of Diamonds' Carat By Clarity" , x = "Carat" , y = "Number of Diamonds")
+  
+  # Weight of a diamonds varied by color
+  diamonds %>% ggplot(aes(x = carat)) + 
+  geom_histogram(bins = 30) + facet_wrap(~color) + labs(title = "Distribution of Diamonds' Carat By Color" , x = "Carat" , y = "Number of Diamonds")
+  
+```
 ---
+The data concludes that the distribution for 
+all carats are left-skewed with the amount of 
+the most impressive cuts reaching low weights. 
+
+We can also see that the distribution of carats by clarity also varies, with
+those with a clarity of "VS2" having the highest number of small diamonds.
+
+Like the other characteristics, there are a lot of smaller diamonds within this data, but by color, 
+they seem slightly more normal than the others. However, there are more diamonds of the color G than other colors.
