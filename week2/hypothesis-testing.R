@@ -1,26 +1,55 @@
 library(tidyverse)
+library(ggplot2)
+library(dplyr)
 
 ####################################################################################
 # IST Chapter 9, Exercise 9.1
 magnets <- read_csv("http://pluto.huji.ac.il/~msby/StatThink/Datasets/magnets.csv")
+summary(magnets)
 
 # 1. What is the sample average of the change in score between the
 #    patient's rating before the application of the device and the
 #    rating after the application?
+
+#   My answer: The sample average is 3.5
+
 # 2. Is the variable "active" a factor or a numeric variable?
+
+#  Answer: "active" is a factor
+
 # 3. Compute the average value of the variable "change" for the patients that
 #    received an active magnet and average value for those that received an
 #    inactive placebo. (Hint: Notice that the first 29 patients received an
 #    active magnet and the last 21 patients received an inactive placebo. The
 #    subsequence of the first 29 values can be obtained via "change[1:29]" and
 #    the last 21 values via "change[30:50]".)
+
+active_mag <- head(magnets, 29)
+inactive_placebo <- tail(magnets, 21)
+
+change_active <- mean(active_mag$change) # 5.241379
+change_inactive <- mean(inactive_placebo$change) # 1.095238
+
+
 # 4. Compute the sample standard deviation of the variable "change" for the
 #    patients that received an active magnet and the sample standard deviation
 #    for those that received an inactive placebo.
+
+sd(active_mag$change) # 3.236568
+sd(inactive_placebo$change) # 1.578124
+
 # 5. Produce a boxplot of the variable "change" for the patients that received
 #    an active magnet and for patients that received an inactive placebo. What
 #    is the number of outliers in each subsequence?
 
+active_mag <- active_mag %>% mutate(group = "Active Magnet")
+inactive_placebo <- inactive_placebo %>% mutate(group = "Inactive Placebo")
+
+magnets_combined <- bind_rows(active_mag, inactive_placebo)
+ggplot(magnets_combined, aes(x = group, y = change, fill = group)) + geom_boxplot()
+
+# For patients that received active magnets, there are no outliers. As for those
+# who received an inactive placebo, there are 3 outliers
 ####################################################################################
 # IST Chapter 10, Exercise 10.1
 #
@@ -33,11 +62,44 @@ magnets <- read_csv("http://pluto.huji.ac.il/~msby/StatThink/Datasets/magnets.cs
 #    of size n = 100 from the Normal(3, 2) distribution. Compute the expectation
 #    and the variance of the sample average and of the sample median. Which of
 #    the two estimators has a smaller mean square error?
-#
+
+    mu <- 3
+    standard_devi <- sqrt(2)
+    x.vec <- rep(0,10^5)
+    median.vec <- rep(0,10^5)
+    for(i in 1:10^5) {
+        x <- rnorm(100,mu,standard_devi)
+        x.vec[i] <- mean(x)
+        median.vec[i] <- median(x)
+    }
+
+    var(x.vec) # 0.02021731
+    var(median.vec) # 0.03119365
+
+    # The mean has the smaller mean square error
+
 # 2. Simulate the sampling distribution of average and the median of a sample
 #    of size n = 100 from the Uniform(0.5, 5.5) distribution. Compute the
 #    expectation and the variance of the sample average and of the sample
 #    median. Which of the two estimators has a smaller mean square error?
+
+    a <- 0.5
+    b <- 5.5
+    x.vec <- rep(0,10^5)
+    median.vec <- rep(0,10^5)
+    for(i in 1:10^5) {
+        x <- runif(100,a,b)
+        x.vec[i] <- mean(x)
+        median.vec[i] <- median(x)
+    }
+
+    mean(x.vec)
+    mean(median.vec)
+
+    var(x.vec) # 0.02097129
+    var(median.vec) # 0.06112592
+
+#   The mean has the smaller MSE error
 
 ####################################################################################
 # IST Chapter 10, Exercise 10.2
@@ -60,16 +122,37 @@ ex2 <- read_csv("http://pluto.huji.ac.il/~msby/StatThink/Datasets/ex2.csv")
 
 # 1. Compute the proportion in the sample of those with a high level of blood
 #    pressure.
+
+    freq_table_samp <- table(ex2$group)
+    # The proportion is 37/150, abount 25%
+
 # 2. Compute the proportion in the population of those with a high level of
 #    blood pressure.
+
+    freq_table_pop <- table(pop2$group)
+    # the proportion is 28,126/100,000, around 28%
+
 # 3. Simulate the sampling distribution of the sample proportion and compute
 #    its expectation.
+
+    distribution <- rep(0,10^5)
+    for(i in 1:10^5) {
+        x <- sample(pop2$group, 150)
+       distribution[i] <- mean(x == "HIGH")
+    }
+    mean(distribution) #For this sample, it's around .28
+
 # 4. Compute the variance of the sample proportion.
+
+    var(distribution) # the variance is around .0012
+
 # 5. It is proposed in Section 10.5 that the variance of the sample proportion
 #    is Var(P_hat) = p(1 - p)/n, where p is the probability of the event (having
 #    a high blood pressure in our case) and n is the sample size (n = 150 in our
 #    case). Examine this proposal in the current setting.
 
+    p <- mean(distribution)
+    p * (1-p) / 150 # The mean is 0.001347955
 ####################################################################################
 # ISRS Exercise 2.2 - Heart transplants, Part II
 #
@@ -91,6 +174,8 @@ ex2 <- read_csv("http://pluto.huji.ac.il/~msby/StatThink/Datasets/ex2.csv")
 #
 # (a) What proportion of patients in the treatment group and what proportion
 #     of patients in the control group died?
+    control_group_died <- 30/34 # Around 88% died
+    treatment_group_died <- 45/69 # Around 65% died
 # (b) One approach for investigating whether or not the treatment is effective
 #     is to use a randomization technique.
 #     i. What are the claims being tested? Use the same null and alternative
@@ -177,3 +262,4 @@ ex2 <- read_csv("http://pluto.huji.ac.il/~msby/StatThink/Datasets/ex2.csv")
 #    distribution of the statistic.
 # 2. Does the observed value of T (computed from the "magnets" data) fall
 #    inside or outside the interval computed in 1?
+
