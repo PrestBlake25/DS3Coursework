@@ -180,23 +180,40 @@ ex2 <- read_csv("http://pluto.huji.ac.il/~msby/StatThink/Datasets/ex2.csv")
 #     is to use a randomization technique.
 #     i. What are the claims being tested? Use the same null and alternative
 #          hypothesis notation used in the section.
+
+       # The claims that were being tested is that if the experimental
+       # heart transplant increased lifespan
+
+       # The null hypothesis is that effectiveness of the treatment group remains the same as the control group
+       # the alternative hypothesis is that the effective increased for the treatment group
+
 #     ii. The paragraph below describes the set up for such approach, if we were
 #     to do it without using statistical software. Fill in the blanks with a
 #     number or phrase, whichever is appropriate. 
-#          We write alive on _______ cards representing patients who were
-#          alive at the end of the study, and dead on ______ cards representing
+#       
+#          We write alive on 28 cards representing patients who were
+#          alive at the end of the study, and dead on 75 cards representing
 #          patients who were not. Then, we shuffle these cards and split them
-#          into two groups: one group of size _______ representing treatment, and
-#          another group of size _________ representing control. We calculate the
+#          into two groups: one group of size 69 representing treatment, and
+#          another group of size 34 representing control. We calculate the
 #          difference between the proportion of dead cards in the treatment and
 #          control groups (treatment - control) and record this value. We repeat
-#          this many times to build a distribution centered at ________. Lastly, we
+#          this many times to build a distribution centered at 0. Lastly, we
 #          calculate the fraction of simulations where the simulated differences
-#          in proportions are _________. If this fraction is low, we conclude that it is
+#          in proportions equal or larger than the observed differences.If this fraction is low, we conclude that it is
 #          unlikely to have observed such an outcome by chance and that the null
 #          hypothesis should be rejected in favor of the alternative.
-#     iii. What do the simulation results suggest about the effectiveness of
-#          the transplant program? (See textbook for figure.)
+#    
+#       iii. What do the simulation results suggest about the effectiveness of
+#               the transplant program? (See textbook for figure.)
+
+            # The similation results are centered around 0, as espected under the null
+            # hypothesis. The observed difference of approximately -0.23 (treatment - control from the sample) falls in the 
+            # far left of the distribution, where very few simulations landed. 
+            # This suggest it is very unlikely to observe such as large difference, by chance
+            # alone. This gives us good indication that the treatment was sucessful in reducing
+            # patient deaths.
+            #
 
 ####################################################################################
 # ISRS Exercise 2.6 
@@ -231,17 +248,29 @@ ex2 <- read_csv("http://pluto.huji.ac.il/~msby/StatThink/Datasets/ex2.csv")
 # histogram shows the distribution of the simulated differences.
 #
 # (a) What are the hypotheses?
+
+    # Null Hypothesis: The person who yawns near another person have no influence on them
+    # Alternative Hypothesis: The person who yawns near another person gets that other person to yawn as well.
+
 # (b) Calculate the observed difference between the yawning rates under the
 #     two scenarios.
+
+    control_yawns <-  10/34
+    treatment_yawns <- 4/16
+    observed_diff <- treatment_yawns - control_yawns # -0.04411765
+
 # (c) Estimate the p-value using the figure and determine the conclusion of
 #     the hypothesis test.
+
+    # The p-value looks like it would be around 0.25 (adding all the bars roughly to the right of 0), meaning that
+    # we would fail to reject the null hypothesis
 
 ####################################################################################
 # IST Exercise 9.2 
 # In Chapter 13 we will present a statistical test for testing
 # if there is a difference between the patients that received the active magnets
 # and the patients that received the inactive placebo in terms of the expected
-# value of the variable that measures the change. The test statist for this
+# value of the variable that measures the change. The test statistc for this
 # problem is taken to be
 #  T = (X_bar_1 - X_bar_2) / sqrt(S_1^2/29 + S_2^2/21)
 #
@@ -260,6 +289,40 @@ ex2 <- read_csv("http://pluto.huji.ac.il/~msby/StatThink/Datasets/ex2.csv")
 #    measurements is Normal and there are 29 patients in the first group and 21
 #    in the second. Find the interval that contains 95% of the sampling
 #    distribution of the statistic.
+
+mu <- 3.5
+stand_active <- 3
+stand_inactive <- 1.5
+test_stat_dist <- rep(0, 10^5)
+for(i in 1:10^5){
+    active_g <- rnorm(29,mu,stand_active)
+    inactive_g <- rnorm(29,mu,stand_inactive)
+    
+    active_mean <- mean(active_g)
+    inactive_mean <- mean(inactive_g)
+
+    active_var <- var(active_g)
+    inactive_var <- var(inactive_g)
+    test_stat_dist[i] <- (active_mean - inactive_mean)/sqrt(active_var/29 + inactive_var/21)
+}
+
+quantile(test_stat_dist, c(0.025, 0.975))
+
+# The interval is [-1.930112, 1.941758]
+
+
 # 2. Does the observed value of T (computed from the "magnets" data) fall
 #    inside or outside the interval computed in 1?
 
+group1 <- magnets %>% head(29)
+group2 <- magnets %>% tail(21)
+
+group1_mean <- mean(group1$change)
+group2_mean <- mean(group2$change)
+
+group1_var <- var(group1$change)
+group2_var <- var(group2$change)
+
+(group1_mean - group2_mean)/sqrt(group1_var/29 + group2_var/21)
+
+#  5.985601, and this value doens't belong in the interval
