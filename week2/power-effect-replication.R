@@ -4,7 +4,7 @@ library(tidyverse)
 # IST Chapter 12, Exercise 12.1
 magnets <- read_csv("http://pluto.huji.ac.il/~msby/StatThink/Datasets/magnets.csv")
 
-#  Consider a medical condition that does not have a standard
+# Consider a medical condition that does not have a standard
 # treatment. The recommended design of a clinical trial for a new treatment
 # to such condition involves using a placebo treatment as a control. A placebo
 # treatment is a treatment that externally looks identical to the actual treatment
