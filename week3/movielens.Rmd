@@ -35,6 +35,7 @@ head(ratings) %>% kable()
 
 ```{r dist-ratings}
 # plot the distribution of rating values https://speakerdeck.com/jhofman/modeling-social-data-lecture-2-introduction-to-counting?slide=26
+ggplot(ratings, aes(x = rating)) + geom_histogram(bins=10) + labs(x = "Ratings", y = "Number Of Ratings") + scale_y_continuous(labels = scales::label_number())
 ```
 
 ## Per-movie stats
@@ -42,24 +43,40 @@ head(ratings) %>% kable()
 ```{r aggregate-by-movie}
 # aggregate ratings by movie, computing mean rating and number of ratings
 # hint: use the n() function for easy counting within a group
+ratings_by_movie <- ratings %>% group_by(movie_id) %>% summarise(num_ratings = n(), avg_rating = mean(rating))
 ```
 
 ```{r dist-movie-popularity}
 # plot distribution of movie popularity (= number of ratings the movie received)
 # hint: try scale_x_log10() for a logarithmic x axis
+ggplot(ratings_by_movie, aes (x = movie_id)) +
+ labs(x = "Movie Id", y = "Number of Ratings") + geom_histogram() + scale_x_log10(breaks = c(1, 10, 100, 1000, 10000, 50000))
 ```
 
 ```{r dist-mean-ratings-by-movie}
 # plot distribution of mean ratings by movie https://speakerdeck.com/jhofman/modeling-social-data-lecture-2-introduction-to-counting?slide=28
 # hint: try geom_histogram and geom_density
+ggplot(ratings_by_movie, aes(x = avg_rating)) + geom_density(fill = "black") +
+labs(x = "Mean Rating", y = "Density")
+
+ggplot(ratings_by_movie, aes(x = avg_rating)) + geom_histogram(bins = 30) +
+labs(x = "Mean Rating", y = "Number Of Ratings")
+
 ```
 
 ```{r cdf-movie-pop}
-# rank movies by popularity (number of ratings) and compute the cdf, or fraction of all views covered by the top-k movies https://speakerdeck.com/jhofman/modeling-social-data-lecture-2-introduction-to-counting?slide=30
+# rank movies by popularity (number of ratings) and compute the cdf, or fraction of all views 
+# covered by the top-k movies 
+# https://speakerdeck.com/jhofman/modeling-social-data-lecture-2-introduction-to-counting?slide=30
 # hint: use dplyr's rank and arrange functions, and the base R sum and cumsum functions
 # store the result in a new data frame so you can use it in creating figure 2 from the paper below
 
 # plot the CDF of movie popularity
+
+rank_ratings <- ratings_by_movie %>% arrange(desc(num_ratings))
+rank_ratings_with_cdf <- rank_ratings %>% mutate(rank_num = row_number(), cdf = cumsum(num_ratings)/sum(num_ratings))
+rank_ratings_with_cdf %>% ggplot(aes(x = rank_num , y = cdf * 100)) + geom_line() + labs(x = "Movie Rank", y = "CDF(%)")
+
 ```
 
 
@@ -67,11 +84,17 @@ head(ratings) %>% kable()
 
 ```{r aggregate-by-user}
 # aggregate ratings by user, computing mean and number of ratings
+
+user_ratings <- ratings %>% group_by(user_id) %>% summarise(mean_rating = mean(rating), num_ratings = n())
 ```
 
 ```{r dist-user-activity}
 # plot distribution of user activity (= number of ratings the user made)
 # hint: try a log scale here
+
+user_ratings %>% ggplot(aes(x=user_id)) +
+geom_histogram(bins = 30) + scale_x_log10(breaks = c(1, 10, 100, 1000, 10000, 50000)) +
+labs(x = "Log of User Id", y = "Number of Ratings")
 ```
 
 # Anatomy of the long tail
@@ -91,4 +114,36 @@ head(ratings) %>% kable()
 # paper, produce one curve for the 100% user satisfaction level and
 # another for 90%---do not, however, bother implementing the null
 # model (shown in the dashed lines).
+
+
+user_who_rated_least_10_movies <- user_ratings %>% filter(num_ratings >= 10)
+rank_ratings_with_cdf
+ratings
+
+new_ratings <- left_join(ratings, rank_ratings_with_cdf, by='movie_id')
+
+worse_rank_ratings <- new_ratings %>% group_by(user_id) %>% summarize(worse_rank = max(rank_num)) %>% arrange(worse_rank)
+
+
+hundred_percent <- worse_rank_ratings %>% group_by(worse_rank) %>% 
+summarize( num_worse_ranks = n()) %>% 
+mutate(cdf = cumsum(num_worse_ranks)/sum(num_worse_ranks))
+
+ninety_percentile <-new_ratings %>% group_by(user_id) %>%
+ summarize(worse_rank =quantile(rank_num,0.9)) %>% 
+ arrange(worse_rank)%>%
+group_by(worse_rank) %>% 
+summarize( num_worse_ranks = n()) %>% 
+mutate( cdf = cumsum(num_worse_ranks)/sum(num_worse_ranks))
+
+
+bind_rows(list(ninety_percentile, hundred_percent),.id = "dataframeid")%>%
+ggplot(aes(x=worse_rank,y=cdf,color = dataframeid))+
+geom_line() + labs(color = "Satsifcation Level", x = "Inventory Size", y = "Percentage")
+
+
+
+
+
+
 ```
