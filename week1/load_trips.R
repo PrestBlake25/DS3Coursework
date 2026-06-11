@@ -2,6 +2,8 @@ library(dplyr)
 library(readr)
 
 # C:/Users/preston/DS3Coursework/week1
+# babyW <- read.table('week3/babyweights.txt', header = TRUE, na.strings = "NA")
+# baby_lm <- lm(bwt ~ ., data = babyW)
 
 # define a function to turn strings into datetimes
 parse_datetime <- function(s, format="%Y-%m-%d %H:%M:%S") {

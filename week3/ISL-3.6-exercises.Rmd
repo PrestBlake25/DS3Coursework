@@ -23,7 +23,7 @@ lm.fit <- lm(medv ~ lstat + age, data = Boston)
 summary(lm.fit)
 ```
 
-Use `.` shorthand to rThe Boston data set contains 12 variables, and so it would be cumbersome
+Use `.` shorthand to The Boston data set contains 12 variables, and so it would be cumbersome
 to have to type all of these in order to perform a regression using all of the
 predictors. Instead, we can use the following short-hand:egress `medv` onto all predictors
  in the dataset.

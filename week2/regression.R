@@ -68,8 +68,6 @@
 
     # the p-value for height is 0, so we would reject the null hypothesis
 
-
-
 # d. The correlation coefficient for height and weight is 0.72. 
 #    Calculate R^2 and interpret it in context.
 

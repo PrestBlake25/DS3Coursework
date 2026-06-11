@@ -26,9 +26,20 @@ body <- read.table("body.dat.txt", header = TRUE)
 babyweights <- read.table("babyweights.txt", header = TRUE)
 
 # a. Write the equation of the regression line.
+
+# Answer: y = 123.05 + -8.94x
+
 # b. Interpret the slope in this context, and calculate the predicted birth weight of babies born to
 # smoker and non-smoker mothers.
+
+#  Answer: if the mother smokes, then the weight of the baby would be 114.11, and if the mother doesn't smoke,
+# the weight of the baby is 123.05.
+
+
 # c. Is there a statistically significant relationship between the average birth weight and smoking?
+
+# Answer: Since the p-values are 0, there is a statistically significant relationship between 
+# the average birth weight and smoking.
 
 ###################################################################################
 # ISRS Exercise 6.2
@@ -42,9 +53,19 @@ babyweights <- read.table("babyweights.txt", header = TRUE)
 # parity          -1.93        1.19    -1.62    0.1052
 #
 # a. Write the equation of the regression line.
+
+# Answer: y = 120.07 + -1.93x
+
 # b. Interpret the slope in this context, and calculate the predicted birth weight of first borns and
 #    others.
+
+# Answer: If the child is of first born, the weight of the kid would by 120.07, and if the kid 
+# is not a first born, the child's weight is 118.14 
+
 # c. Is there a statistically significant relationship between the average birth weight and parity?
+
+# There is no statistically significant relationship between birth weight and parity since
+# the p-value of partiy is more than .05
 
 ###################################################################################
 # ISRS Exercise 6.3
@@ -73,10 +94,45 @@ babyweights <- read.table("babyweights.txt", header = TRUE)
 # smoke           -8.40        0.95    -8.81    0.0000
 #
 # a. Write the equation of the regression line that includes all variables:
+
+# Answer: y = -80.41 + 0.44x1 + -3.33x2 + -0.01x3 + 1.15x4 + 0.05x5 + -8.4x6
+
+# x1 = gestation
+# x2 = parity
+# x3 = age of mother
+# x4 = mother's height
+# x5 = mother's weight
+# x6 = smoke
+
+
+
 # b. Interpret the slopes of gestation and age in this context:
+
+# gestation - for each day the mother becomes pregnant with her baby, the slope increases by 0.44
+# age - as the woman gets older, the baby's birth weight will increase by .44
+
+
 # c. The coefficient for parity is different than in the linear model shown in Exercise 6.2. Why
 #    might there be a difference?
+
+# The parity's coefficient is different than the one in the other model because 
+# there are multiple independent variables contributing in finding the weight of
+# the baby
+#
+
+
 # d. Calculate the residual for the first observation in the dataset.
+
+babyW <- read.table('week3/babyweights.txt', header = TRUE, na.strings = "NA")
+baby_lm <- lm(bwt ~ ., data = babyW)
+residuals(baby_lm)[1]
+
+# -2.003102
+
 # e. The variance of the residuals is 249.28, and the variance of the birth weights of all babies
 #    in the data set is 332.57. Calculate the R^2 and the adjusted R^2. Note that there are 1,236
 #    bservations in the data set.
+
+r_squared <- 1 - (249.28/332.57) # R^2: .2504435
+adj_r_squared <- 1 - (249.28/332.57) * (1236 - 1)/(1236 - 6 - 1) # Adjusted R^2: .2467842
+summary(baby_lm)$r.squared
