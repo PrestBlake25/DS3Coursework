@@ -1,6 +1,6 @@
 ---
 title: "Predicting Daily Citibike Trips"
-author: "Your Name"
+author: "Preston Blake"
 date: "`r Sys.Date()`"
 output: html_document
 ---
@@ -13,6 +13,7 @@ library(modelr)
 ## Load data
 
 ```{r}
+trips <- read_tsv('week3/trips_per_day.tsv')
 
 ```
 
