@@ -1,6 +1,6 @@
 ---
 title: "MSD Homework 2, Problem 3"
-author: "Your Name (your uni)"
+author: "Preston Blake (Lehman College)"
 date: '`r Sys.time()`'
 output:
   html_document:
@@ -12,6 +12,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
+install.packages(here)
 library(here)
 library(scales)
 library(tidyverse)
@@ -52,14 +53,21 @@ Then edit the `03_download_totals.sh` file to down the `googlebooks-eng-all-tota
 Load in the `year_counts.tsv` and `total_counts.csv` files. Use the `here()` function around the filename to keep things portable.Give the columns of `year_counts.tsv` the names `term`, `year`, `volume`, and `book_count`. Give the columns of `total_counts.csv` the names `year`, `total_volume`, `page_count`, and `book_count`. Note that column order in these files may not match the examples in the documentation.
 
 ```{r load-counts}
+file1 <- here('week3/ngrams/data', 'total_counts.csv')
+file2 <- here('week3/ngrams/data', 'year_counts.tsv')
 
+year_counts <- read_tsv(file2, col_names = c('term', 'year','volume', 'book_count'))
+total_counts <- read_csv(file1, col_names = c('year', 'total_volume', 'page_count', 'book_count'))
 
 ```
 
 ## Your written answer
 
 Add a line below using Rmarkdown's inline syntax to print the total number of lines in each dataframe you've created.
-
+```{r}
+nrow(year_counts)
+nrow(total_counts)
+```
 # Part B
 
 > Recreate the main part of figure 3a of Michel et al. (2011). To recreate this figure, you will need two files: the one you downloaded in part (a) and the “total counts” file, which you can use to convert the raw counts into proportions. Note that the total counts file has a structure that may make it a bit hard to read in. Does version 2 of the NGram data produce similar results to those presented in Michel et al. (2011), which are based on version 1 data?
@@ -69,8 +77,7 @@ Add a line below using Rmarkdown's inline syntax to print the total number of li
 Join the raw year term counts with the total counts and divide to get a proportion of mentions for each term normalized by the total counts for each year.
 
 ```{r join-years-and-totals}
-
-
+year_total_counts <- inner_join(total_counts, year_counts, by = "year")
 ```
 
 ## Plot the main figure 3a
@@ -79,11 +86,18 @@ Plot the proportion of mentions for the terms "1883", "1910", and "1950" over ti
 
 ```{r plot-proportion-over-time}
 
+year_total_counts <- year_total_counts %>% mutate(volume_perc = volume/total_volume)
+
+filtered_years <- filter(year_total_counts, term %in% c(1883, 1910, 1950))
+
+ggplot(data = filtered_years, aes(x = year, y = volume_perc, group = term ,color = term)) + 
+geom_line() + xlim(1850, 2000) + labs(x = "Year", y = "Frequency") + scale_y_continuous(labels = percent)
+
 ```
 
 ## Your written answer
 
-Write up your answer to Part B here.
+The version 2 of the NGram data does look similar to the results presented in the version 1 data.
 
 # Part C
 
@@ -95,8 +109,9 @@ Go to the ngram viewer, enter the terms "1883", "1910", and "1950" and take a sc
 
 ## Your written answer
 
-Add your screenshot for Part C below this line using the `![](figure_filename.png)` syntax and comment on similarities / differences.
+Add your screenshot for Part C below this line using the `![week3/ngrams/NGramsBooks.png](figure_filename.png)` syntax and comment on similarities / differences.
 
+![NGramsPlot](week3/ngrams/NGramsBooks.png)
 
 # Part D
 
@@ -107,6 +122,8 @@ Add your screenshot for Part C below this line using the `![](figure_filename.pn
 Plot the raw counts for the terms "1883", "1910", and "1950" over time from 1850 to 2012. Use the `comma` function from the `scales` package for a readable y axis. The colors for each term should match your last plot, and it's nice if these match the original paper but not strictly necessary.
 
 ```{r plot-raw-mentions-over-time}
+ggplot(data = filtered_years, aes(x = year, y = volume, group = term ,color = term)) + 
+geom_line() + xlim(1850, 2012) + labs(x = "Year", y = "Raw Mentions") + scale_y_continuous(labels = comma)
 
 ```
 
@@ -121,13 +138,15 @@ As part of answering this question, make an additional plot.
 Plot the total counts for each year over time, from 1850 to 2012. Use the `comma` function from the `scales` package for a readable y axis. There should be only one line on this plot (not three).
 
 ```{r plot-totals}
-
+filtered_years$term <- as.factor(filtered_years$term)
+ggplot(data = filtered_years, aes(x = year, y = total_volume, group = term ,color = term)) + 
+geom_line() + xlim(1850, 2012) + labs(x = "Year", y = "Raw Mentions") + scale_y_continuous(labels = comma)
 ```
 
 ## Your written answer
 
-Write up your answer to Part E here.
-
+I didn't need to reevaluate the graphs since the graphs match up. I expect the highest volume percentage to have the 
+highest volume which the plots show
 # Part F
 
 > Now, using the proportion of mentions, replicate the inset of figure 3a. That is, for each year between 1875 and 1975, calculate the half-life of that year. The half-life is defined to be the number of years that pass before the proportion of mentions reaches half its peak value. Note that Michel et al. (2011) do something more complicated to estimate the half-life—see section III.6 of the Supporting Online Information—but they claim that both approaches produce similar results. Does version 2 of the NGram data produce similar results to those presented in Michel et al. (2011), which are based on version 1 data? (Hint: Don’t be surprised if it doesn’t.)
@@ -137,7 +156,7 @@ Write up your answer to Part E here.
 For each year term, find the year where its proportion of mentions peaks (hits its highest value). Store this in an intermediate dataframe.
 
 ```{r compute-peaks}
-
+year_total_counts_max <- year_total_counts %>% group_by(term) %>% filter(volume_perc == max(volume_perc))
 ```
 
 ## Compute half-lifes
@@ -146,6 +165,9 @@ Now, for each year term, find the minimum number of years it takes for the propo
 
 ```{r compute-half-lifes}
 
+years_combined <- left_join(year_total_counts, year_total_counts_max, by = 'term') 
+years_half_life <- years_combined %>% filter(year.x > year.y,  volume_perc.x < (volume_perc.y/2)) %>% 
+group_by(term) %>% filter(year.x == min(year.x)) %>% mutate(half_life = year.x - year.y)
 ```
 
 ## Plot the inset of figure 3a
@@ -154,6 +176,7 @@ Plot the half-life of each term over time from 1850 to 2012. Each point should r
 
 
 ```{r plot-half-lifes}
+ggplot(years_half_life, aes(x = term, y = half_life)) + xlim(1850, 2012) + geom_point() + geom_smooth()
 
 ```
 
