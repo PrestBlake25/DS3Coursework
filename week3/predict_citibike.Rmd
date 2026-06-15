@@ -144,9 +144,9 @@ Try different models and compare their validation performance.
     # Out of all the models here, this is the best one due to the errors low gap between
     # and there are no sign of overfitting
 
-    model3 <- lm(num_trips ~ poly(tmin, prcp, snwd, degree = 4), data = train_set)
-    # "Training Error for Degree 4 is 3990.05653360804"
-    # "Validating Error for Degree 4 is 3905.5969277849"
+    model3 <- lm(num_trips ~ poly(tmin, prcp, snwd, degree = 5), data = train_set)
+    # "Training Error for Degree 6 is 3929.14473539237"
+    # "Validating Error for Degree 6 is 3878.38460316871"
 ```
 
 ## Final model
@@ -169,6 +169,7 @@ ggplot(plot_data, aes(x = pred, y = num_trips)) +
   geom_point() +
   geom_abline() + 
   scale_y_continuous(labels = comma) +
+  scale_x_continuous(labels = comma) + 
   labs( x = "Predictions", y = "Actual Number of Trips", title = "Predictions vs Actual Number Of Trips")
 
 # Since there are multiple predictors within this model, I have decided to
@@ -192,7 +193,9 @@ model3 <- lm(num_trips ~ poly(tmin, prcp, snwd, degree = 4), data = train_set)
 # TODO: how do you think this model will perform on future data?
 
 
+predictions <- predict(model3, test_set)
+rmse <- sqrt(mean((predictions - test_set$num_trips)^2))
 
-
-
+# The RSME is around 2.5 million for one sample. However, relative to the data, the RMSEs of the vaildation and training 
+# are close, so I don't have a definite prediction on how well it will predict new data.
 ```
