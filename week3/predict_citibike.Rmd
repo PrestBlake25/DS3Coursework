@@ -8,6 +8,7 @@ output: html_document
 ```{r setup, message=FALSE}
 library(tidyverse)
 library(modelr)
+library(scales)
 ```
 
 ## Load data
@@ -23,7 +24,10 @@ Hold out 10% of the data as a final test set. Use the remaining 90% for
 training and validation.
 
 ```{r}
-
+train_set <- trips %>% slice_sample(prop = .8)
+vaild_set <- trips %>% slice_sample(prop = .1)
+train_n_test_set <- rbind(train_set, vaild_set)
+test_set <- anti_join(trips, train_n_test_set, by = "ymd")
 ```
 
 ## Baseline model: temperature only
@@ -33,6 +37,25 @@ Start with the polynomial model from the complexity control notebook.
 ```{r}
 # TODO: fit a linear model using poly(tmin, degree) on training data
 # TODO: try different polynomial degrees and evaluate RMSE on validation data
+
+temp_model <- lm(num_trips ~ poly(tmin, degree = 1, raw = T), data = train_set)
+temp_train_err <- sqrt(mean((predict(temp_model, train_set) - train_set$num_trips)^2))
+temp_valid_err <- sqrt(mean((predict(temp_model, vaild_set) - vaild_set$num_trips)^2))
+
+K <- 1:10
+train_err_v <- c()
+vaild_err_v <- c()
+for (k in K) {
+    temp_model <- lm(num_trips ~ poly(tmin, k, raw = T), data = train_set)
+    
+    # evaluate on the training data
+    train_err_v[k] <- sqrt(mean((predict(temp_model, train_set) - train_set$num_trips)^2))
+
+    # evaluate on the validate data
+    vaild_err_v[k] <- sqrt(mean((predict(temp_model, vaild_set) - vaild_set$num_trips)^2))
+    print(paste0("Training Error for Degree ",k, " is ", train_err_v[k]))
+    print(paste0("Validating Error for Degree ",k, " is ", vaild_err_v[k]))
+}
 ```
 
 ## Feature engineering
@@ -42,6 +65,67 @@ Remember: only use information available *before* the day in question.
 
 ```{r}
 
+K <- 1:10
+train_err_v <- c()
+vaild_err_v <- c()
+for (k in K) {
+    model1 <- lm(num_trips ~ poly(tmin, snow, tmax, degree = k), data = train_set)
+    
+    # evaluate on the training data
+    train_err_v[k] <- sqrt(mean((predict(model1, train_set) - train_set$num_trips)^2))
+
+    # evaluate on the validate data
+    vaild_err_v[k] <- sqrt(mean((predict(model1, vaild_set) - vaild_set$num_trips)^2))
+    print(paste0("Training Error for Degree ",k, " is ", train_err_v[k]))
+    print(paste0("Validating Error for Degree ",k, " is ", vaild_err_v[k]))
+}
+
+
+K <- 1:10
+train_err_v <- c()
+vaild_err_v <- c()
+for (k in K) {
+    model1 <- lm(num_trips ~ poly(tmin, snow, prcp, degree = k), data = train_set)
+    
+    # evaluate on the training data
+    train_err_v[k] <- sqrt(mean((predict(model1, train_set) - train_set$num_trips)^2))
+
+    # evaluate on the validate data
+    vaild_err_v[k] <- sqrt(mean((predict(model1, vaild_set) - vaild_set$num_trips)^2))
+    print(paste0("Training Error for Degree ",k, " is ", train_err_v[k]))
+    print(paste0("Validating Error for Degree ",k, " is ", vaild_err_v[k]))
+}
+
+
+K <- 1:10
+train_err_v <- c()
+vaild_err_v <- c()
+for (k in K) {
+    model1 <- lm(num_trips ~ poly(tmin, snow, prcp, degree = k), data = train_set)
+    
+    # evaluate on the training data
+    train_err_v[k] <- sqrt(mean((predict(model1, train_set) - train_set$num_trips)^2))
+
+    # evaluate on the validate data
+    vaild_err_v[k] <- sqrt(mean((predict(model1, vaild_set) - vaild_set$num_trips)^2))
+    print(paste0("Training Error for Degree ",k, " is ", train_err_v[k]))
+    print(paste0("Validating Error for Degree ",k, " is ", vaild_err_v[k]))
+}
+
+K <- 1:10
+train_err_v <- c()
+vaild_err_v <- c()
+for (k in K) {
+    model1 <- lm(num_trips ~ poly(tmin, prcp, snwd, degree = k), data = train_set)
+    
+    # evaluate on the training data
+    train_err_v[k] <- sqrt(mean((predict(model1, train_set) - train_set$num_trips)^2))
+
+    # evaluate on the validate data
+    vaild_err_v[k] <- sqrt(mean((predict(model1, vaild_set) - vaild_set$num_trips)^2))
+    print(paste0("Training Error for Degree ",k, " is ", train_err_v[k]))
+    print(paste0("Validating Error for Degree ",k, " is ", vaild_err_v[k]))
+}
 ```
 
 ## Model comparison
@@ -49,7 +133,20 @@ Remember: only use information available *before* the day in question.
 Try different models and compare their validation performance.
 
 ```{r}
+    model1 <- lm(num_trips ~ poly(tmin, snow, tmax, degree = 6), data = train_set)
+    # "Training Error for Degree 6 is 4530.49971458804"
+    # "Validating Error for Degree 6 is 4614.53482397946"
+    # There is a little bit of overfitting here
 
+    model2 <- lm(num_trips ~ poly(tmin, snow, prcp, degree = 4), data = train_set)
+    # "Training Error for Degree 4 is 4107.00529687467"
+    # "Validating Error for Degree 4 is 4047.48171182731"
+    # Out of all the models here, this is the best one due to the errors low gap between
+    # and there are no sign of overfitting
+
+    model3 <- lm(num_trips ~ poly(tmin, prcp, snwd, degree = 4), data = train_set)
+    # "Training Error for Degree 4 is 3990.05653360804"
+    # "Validating Error for Degree 4 is 3905.5969277849"
 ```
 
 ## Final model
@@ -57,13 +154,32 @@ Try different models and compare their validation performance.
 Pick your best model and plot the results.
 
 ```{r}
+model3_RSME <- sqrt(mean((predict(model3, train_set) - train_set$num_trips)^2))
+
+
+train_set <- train_set %>%
+  add_predictions(model3) %>%
+  mutate(split = "train")
+vaild_set <- vaild_set %>%
+  add_predictions(model3) %>%
+  mutate(split = "validate")
+plot_data <- bind_rows(train_set, vaild_set)
+
+ggplot(plot_data, aes(x = pred, y = num_trips)) +
+  geom_point() +
+  geom_abline() + 
+  scale_y_continuous(labels = comma) +
+  labs( x = "Predictions", y = "Actual Number of Trips", title = "Predictions vs Actual Number Of Trips")
+
+# Since there are multiple predictors within this model, I have decided to
+# add a predictions vs actual values graph instead.
 
 ```
 
 ## Save model
 
 ```{r}
-
+model3 <- lm(num_trips ~ poly(tmin, prcp, snwd, degree = 4), data = train_set)
 ```
 
 ## Test set evaluation
@@ -74,4 +190,9 @@ Pick your best model and plot the results.
 # TODO: load your saved model and predict on trips_test
 # TODO: compute RMSE on test set
 # TODO: how do you think this model will perform on future data?
+
+
+
+
+
 ```
