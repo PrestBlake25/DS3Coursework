@@ -1,0 +1,12 @@
+---
+title: "Predicting Daily Citibike Trips"
+author: "Preston Blake"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, message=FALSE}
+library(tidyverse)
+library(modelr)
+library(scales)
+```

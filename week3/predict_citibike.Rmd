@@ -169,7 +169,7 @@ ggplot(plot_data, aes(x = pred, y = num_trips)) +
   geom_point() +
   geom_abline() + 
   scale_y_continuous(labels = comma) +
-  scale_x_continuous(labels = comma) + 
+  scale_x_continuous(labels = comma, limits = c(0, 35000)) + 
   labs( x = "Predictions", y = "Actual Number of Trips", title = "Predictions vs Actual Number Of Trips")
 
 # Since there are multiple predictors within this model, I have decided to
@@ -195,7 +195,7 @@ model3 <- lm(num_trips ~ poly(tmin, prcp, snwd, degree = 4), data = train_set)
 
 predictions <- predict(model3, test_set)
 rmse <- sqrt(mean((predictions - test_set$num_trips)^2))
-
+save(model3, file = 'C:/Users/preston/DS3Coursework/week3/model.Rdata')
 # The RSME is around 2.5 million for one sample. However, relative to the data, the RMSEs of the vaildation and training 
 # are close, so I don't have a definite prediction on how well it will predict new data.
 ```
