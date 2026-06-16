@@ -24,10 +24,14 @@ Hold out 10% of the data as a final test set. Use the remaining 90% for
 training and validation.
 
 ```{r}
-train_set <- trips %>% slice_sample(prop = .8)
-vaild_set <- trips %>% slice_sample(prop = .1)
-train_n_test_set <- rbind(train_set, vaild_set)
-test_set <- anti_join(trips, train_n_test_set, by = "ymd")
+
+set.seed(42)
+trips_shuffled <- trips %>% slice_sample(prop = 1)
+n <- nrow(trips)
+
+train_set <- trips_shuffled %>% slice(1:floor(n * .8))
+vaild_set <- trips_shuffled %>% slice(floor(n*.8) + 1: floor(n*.9))
+test_set <- trips_shuffled %>% slice(floor(n*.9) + 1: n)
 ```
 
 ## Baseline model: temperature only
@@ -180,7 +184,7 @@ ggplot(plot_data, aes(x = pred, y = num_trips)) +
 ## Save model
 
 ```{r}
-model3 <- lm(num_trips ~ poly(tmin, prcp, snwd, degree = 4), data = train_set)
+model3 <- lm(num_trips ~ poly(tmin, prcp, snwd, degree = 1), data = train_set)
 ```
 
 ## Test set evaluation

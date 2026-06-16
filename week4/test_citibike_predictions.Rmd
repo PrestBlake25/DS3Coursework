@@ -33,7 +33,7 @@ trips_weather <- trips_weather %>%
     station = STATION
   )
 
-predictions <- predict(model2, trips_weather)
+predictions <- predict(model3, trips_weather)
 num_trips <- trips_weather$num_trips
 rmse <- sqrt(mean((predictions - trips_weather$num_trips)^2))
 rmse(trips_weather$num_trips, predictions)
