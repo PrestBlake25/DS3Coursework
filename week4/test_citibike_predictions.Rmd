@@ -1,5 +1,5 @@
 ---
-title: "Predicting Daily Citibike Trips"
+title: "Predicting 2015 Citibike Trips"
 author: "Preston Blake"
 date: "`r Sys.Date()`"
 output: html_document
@@ -9,4 +9,41 @@ output: html_document
 library(tidyverse)
 library(modelr)
 library(scales)
+```
+
+```{r load-model}
+load("week3/model.Rdata")
+
+weather <- read_csv('week4/weather_2015.csv')
+trips <- read_tsv('week4/trips_per_day_2015.tsv')
+colnames(weather)[colnames(weather) == "DATE"] <- "ymd"
+
+trips_weather <- inner_join(trips, weather, by = "ymd")
+trips_weather <- trips_weather %>% filter(year(ymd) == 2015)
+trips_weather$TMIN <- trips_weather$TMIN/10
+trips_weather$TMAX <- trips_weather$TMAX/10
+
+trips_weather <- trips_weather %>%
+  rename(
+    prcp = PRCP,
+    snow  = SNOW,
+    snwd = SNWD,
+    tmax = TMAX,
+    tmin = TMIN,
+    station = STATION
+  )
+
+predictions <- predict(model2, trips_weather)
+num_trips <- trips_weather$num_trips
+rmse <- sqrt(mean((predictions - trips_weather$num_trips)^2))
+rmse(trips_weather$num_trips, predictions)
+
+ggplot(trips_weather, aes(x = predictions, y = num_trips)) +
+  geom_point() +
+  geom_abline() + 
+  scale_y_continuous(labels = comma) +
+  scale_x_continuous(labels = comma, limits = c(0, 33000)) + 
+  labs(x = "Predictions", y = "Actual Number of Trips", title = "Predictions vs Actual Number Of Trips")
+
+
 ```

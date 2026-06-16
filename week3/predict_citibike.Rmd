@@ -169,7 +169,7 @@ ggplot(plot_data, aes(x = pred, y = num_trips)) +
   geom_point() +
   geom_abline() + 
   scale_y_continuous(labels = comma) +
-  scale_x_continuous(labels = comma, limits = c(0, 35000)) + 
+  scale_x_continuous(labels = comma, limits = c(0, 33000)) + 
   labs( x = "Predictions", y = "Actual Number of Trips", title = "Predictions vs Actual Number Of Trips")
 
 # Since there are multiple predictors within this model, I have decided to
